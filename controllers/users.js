@@ -1,8 +1,10 @@
+import { DEV_JWT_SECRET } from '../config/devConfig';
+
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 
-const { NODE_ENV, JWT_SECRET } = process.env;
+const { JWT_SECRET = DEV_JWT_SECRET } = process.env;
 const NotFound = require('../errors/notFound');
 const AnotherEmail = require('../errors/anotherEmail');
 
