@@ -1,6 +1,6 @@
-import express from 'express';
-import { celebrate, Joi } from 'celebrate';
-import { get, update } from '../controllers/users';
+const { celebrate, Joi } = require('celebrate');
+const express = require('express');
+const { get, update } = require('../controllers/users');
 
 const router = express.Router();
 

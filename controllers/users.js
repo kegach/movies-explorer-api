@@ -1,7 +1,6 @@
-import { DEV_JWT_SECRET } from '../config/devConfig';
-
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { DEV_JWT_SECRET } = require('../config/devConfig');
 const User = require('../models/user');
 
 const { JWT_SECRET = DEV_JWT_SECRET } = process.env;
@@ -64,6 +63,6 @@ const login = async (req, res, next) => {
 
 const signout = (req, res) => res.clearCookie('jwt', { httpOnly: true, sameSite: true }).send({ message: 'Досвидания' });
 
-export {
+module.exports = {
   create, get, update, login, signout,
 };

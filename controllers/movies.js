@@ -64,4 +64,4 @@ const deleteMovie = async (req, res, next) => {
   }
 };
 
-export { getMovies, create, deleteMovie };
+module.exports = { getMovies, create, deleteMovie };

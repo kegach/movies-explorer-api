@@ -1,6 +1,6 @@
-import joiObjectId from 'joi-objectid';
-import { celebrate, Joi } from 'celebrate';
-import express from 'express';
+const joiObjectId = require('joi-objectid');
+const { celebrate, Joi } = require('celebrate');
+const express = require('express');
 
 const {
   getMovies,

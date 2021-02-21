@@ -1,6 +1,4 @@
-import { DEV_DATABASE_URL } from './config/devConfig';
-
-require('dotenv').config();
+const dotenv = require('dotenv');
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
@@ -8,6 +6,7 @@ const helmet = require('helmet');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const { errors } = require('celebrate');
+const { DEV_DATABASE_URL } = require('./config/devConfig');
 const limiter = require('./middlewares/limiter');
 
 const router = require('./routes');
@@ -16,6 +15,8 @@ const { reqLogger, errorLogger } = require('./middlewares/logger');
 const { DATABASE_URL = DEV_DATABASE_URL } = process.env;
 const { PORT = 3000 } = process.env;
 const app = express();
+
+dotenv.config();
 
 mongoose.connect(DATABASE_URL, {
   useNewUrlParser: true,
@@ -33,8 +34,8 @@ app.use(helmet());
 const option = {
   origin: [
     'http://localhost:8080',
-    'http://kegach-server.students.nomoredomains.rocks',
-    'https://kegach-server.students.nomoredomains.rocks',
+    'http://kegach-diplom.students.nomoredomains.rocks',
+    'https://kegach-diplom.students.nomoredomains.rocks',
   ],
   methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
   preflightContinue: false,
