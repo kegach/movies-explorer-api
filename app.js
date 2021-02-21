@@ -11,6 +11,7 @@ const limiter = require('./middlewares/limiter');
 
 const router = require('./routes');
 const { reqLogger, errorLogger } = require('./middlewares/logger');
+const errorOnServer = require('./middlewares/errorOnServer');
 
 const { DATABASE_URL = DEV_DATABASE_URL } = process.env;
 const { PORT = 3000 } = process.env;
@@ -53,14 +54,6 @@ app.use(router);
 app.use(errorLogger);
 app.use(errors());
 
-app.use((err, req, res, next) => {
-  const { statusCode = 500, message } = err;
-  res.status(statusCode).send({
-    message: statusCode === 500
-      ? 'На сервере произошла ошибка!'
-      : message,
-  });
-  next();
-});
+app.use(errorOnServer);
 
 app.listen(PORT);
