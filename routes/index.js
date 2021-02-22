@@ -6,14 +6,14 @@ const { create, login, signout } = require('../controllers/users.js');
 const auth = require('../middlewares/auth.js');
 const NotFound = require('../errors/notFound');
 
-router.use('/signin', celebrate({
+router.use('/signup', celebrate({
   body: Joi.object().keys({
     email: Joi.string().email().required(),
     password: Joi.string().required(),
     name: Joi.string().min(2).max(30).required(),
   }),
 }), login);
-router.use('/signup', celebrate({
+router.use('/signin', celebrate({
   body: Joi.object().keys({
     email: Joi.string().email().required(),
     password: Joi.string().required(),
