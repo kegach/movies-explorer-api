@@ -11,8 +11,8 @@ const {
 const router = express.Router();
 Joi.objectId = joiObjectId(Joi);
 
-router.get('/movies', getMovies);
-router.post('/movies', celebrate({
+router.get('/', getMovies);
+router.post('/', celebrate({
   body: Joi.object().keys({
     country: Joi.string().required(),
     director: Joi.string().required(),
