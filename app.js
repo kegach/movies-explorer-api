@@ -34,7 +34,8 @@ app.use(helmet());
 
 const option = {
   origin: [
-    'http://localhost:8080',
+    'http://localhost:3000',
+    'http://localhost:3001',
     'http://kegach-diplom.students.nomoredomains.rocks',
     'https://kegach-diplom.students.nomoredomains.rocks',
   ],
