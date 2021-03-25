@@ -1,30 +1,42 @@
-const router = require('express').Router();
-const { Joi, celebrate } = require('celebrate');
-const usersRouter = require('./users');
-const moviesRouter = require('./movies');
-const { create, login, signout } = require('../controllers/users.js');
-const auth = require('../middlewares/auth.js');
-const NotFound = require('../errors/notFound');
+const routes = require('express').Router();
+const { celebrate, Joi } = require('celebrate');
 
-router.use('/signup', celebrate({
-  body: Joi.object().keys({
-    email: Joi.string().email({ minDomainSegments: 2 }).required(),
-    password: Joi.string().required(),
-    name: Joi.string().min(2).max(30).required(),
+const usersRouter = require('./users/users');
+const moviesRouter = require('./movies/movies');
+
+const { errorMessages } = require('../utils/constants');
+const usersController = require('../controllers/users');
+const auth = require('../middlewares/auth');
+const NotFoundError = require('../utils/errors/NotFoundError');
+
+routes.post(
+  '/signup',
+  celebrate({
+    body: Joi.object().keys({
+      email: Joi.string().required().email(),
+      password: Joi.string().required().min(5),
+      name: Joi.string().required().trim().min(2)
+        .max(30),
+    }),
   }),
-}), create);
-router.use('/signin', celebrate({
-  body: Joi.object().keys({
-    email: Joi.string().email({ minDomainSegments: 2 }).required(),
-    password: Joi.string().required(),
+  usersController.createUser,
+);
+
+routes.post(
+  '/signin',
+  celebrate({
+    body: Joi.object().keys({
+      email: Joi.string().required().email(),
+      password: Joi.string().required().min(5),
+    }),
   }),
-}), login);
+  usersController.login,
+);
 
-router.get('/signout', signout);
+routes.get('/signout', usersController.logout);
 
-router.use('/users', auth, usersRouter);
-router.use('/movies', auth, moviesRouter);
+routes.use('/users', auth, usersRouter);
+routes.use('/movies', auth, moviesRouter);
+routes.use(auth, (req, res, next) => next(new NotFoundError(errorMessages.PAGE_NOT_FOUND)));
 
-router.use(auth, (req, res, next) => next(new NotFound('Запрашиваемый ресурс не найден')));
-
-module.exports = router;
+module.exports = routes;

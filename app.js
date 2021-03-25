@@ -1,23 +1,23 @@
 require('dotenv').config();
+
 const express = require('express');
 const mongoose = require('mongoose');
-const bodyParser = require('body-parser');
 const helmet = require('helmet');
-const cookieParser = require('cookie-parser');
 const cors = require('cors');
+const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
 const { errors } = require('celebrate');
-const { DEV_DATABASE_URL } = require('./config/devConfig');
-const limiter = require('./middlewares/limiter');
+const { requestLogger, errorLogger } = require('./middlewares/logger');
+const { limiter } = require('./utils/limiter');
+const config = require('./utils/config');
 
-const router = require('./routes');
-const { reqLogger, errorLogger } = require('./middlewares/logger');
-const errorOnServer = require('./middlewares/errorOnServer');
+const routes = require('./routes');
+const { errorHandler } = require('./utils/errors/errorHandler');
 
-const { DATABASE_URL = DEV_DATABASE_URL } = process.env;
-const { PORT = 3000 } = process.env;
+const { PORT = 3000, NODE_ENV, MONGO_DB_ADDRESS } = process.env;
 const app = express();
 
-mongoose.connect(DATABASE_URL, {
+mongoose.connect(NODE_ENV === 'production' ? MONGO_DB_ADDRESS : config.MONGO_DB_ADDRESS, {
   useNewUrlParser: true,
   useCreateIndex: true,
   useFindAndModify: false,
@@ -41,18 +41,14 @@ const option = {
 app.use('*', cors(option));
 app.use(helmet());
 app.use(cookieParser());
-
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-
-app.use(reqLogger);
+app.use(requestLogger);
 app.use(limiter);
-
-app.use(router);
-
+app.use(routes);
 app.use(errorLogger);
 app.use(errors());
 
-app.use(errorOnServer);
+app.use(errorHandler);
 
 app.listen(PORT, () => {});

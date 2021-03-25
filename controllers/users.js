@@ -1,68 +1,107 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { DEV_JWT_SECRET } = require('../config/devConfig');
+
 const User = require('../models/user');
+const { DEFAULT_UPDATE_PARAMS, errorMessages, messages } = require('../utils/constants');
+const NotFoundError = require('../utils/errors/NotFoundError');
+const BadRequestError = require('../utils/errors/BadRequestError');
+const ConflictError = require('../utils/errors/ConflictError');
 
-const { JWT_SECRET = DEV_JWT_SECRET } = process.env;
-const NotFound = require('../errors/notFound');
-const AnotherEmail = require('../errors/anotherEmail');
+const { NODE_ENV, JWT_SECRET } = process.env;
 
-const create = async (req, res, next) => {
-  const { email, password, name } = req.body;
-  try {
-    const user = await User.findOne({ email });
-    if (user) {
-      throw new AnotherEmail('Пользователь с такой почтой уже существует!');
-    }
-    const hash = await bcrypt.hash(password, 10);
-    await User.create({ email, name, password: hash });
-    return res.status(201).send({ email, name });
-  } catch (err) {
-    return next(err);
-  }
+exports.getCurrentUser = (req, res, next) => {
+  User.findById(req.user._id)
+    .then((user) => {
+      if (!user) {
+        throw new NotFoundError(errorMessages.USER_NOT_FOUND);
+      }
+      res.send(user);
+    })
+    .catch((err) => next(err));
 };
-const get = async (req, res, next) => {
-  try {
-    const user = await User.findById(req.user._id).orFail(
-      new NotFound('Не найдено'),
-    );
-    return res.send(user);
-  } catch (err) {
-    return next(err);
-  }
-};
-const update = async (req, res, next) => {
+
+exports.updateUser = (req, res, next) => {
   const { email, name } = req.body;
-  try {
-    const user = await User.findByIdAndUpdate(
-      req.user._id,
-      { email, name },
-      { new: true, runValidators: true },
-    ).orFail(new NotFound('Не найдено'));
-    return res.send(user);
-  } catch (err) {
-    return next(err);
-  }
+  User.findByIdAndUpdate(
+    req.user._id,
+    { email, name },
+    DEFAULT_UPDATE_PARAMS,
+  )
+    .then((user) => {
+      if (!user) {
+        throw new NotFoundError(errorMessages.USER_NOT_FOUND);
+      }
+      res.send(user);
+    })
+    .catch((err) => next(err));
 };
-const login = async (req, res, next) => {
+
+exports.createUser = (req, res, next) => {
+  const { email, password, name } = req.body;
+
+  bcrypt
+    .hash(password, 10)
+    .then((hash) => User.create({
+      email,
+      password: hash,
+      name,
+    }))
+    .then((newUser) => {
+      if (!newUser) {
+        throw new BadRequestError(errorMessages.WRONG_INPUT_DATA);
+      }
+      return User.findById(newUser._id);
+    })
+    .then((newUser) => {
+      if (!newUser) {
+        throw new NotFoundError(errorMessages.USER_NOT_FOUND);
+      }
+      res.send(newUser);
+    })
+    .catch((err) => {
+      if (err.code === 11000) {
+        next(new ConflictError(errorMessages.EXISTING_USER_EMAIL));
+      }
+      next(err);
+    });
+};
+
+exports.login = (req, res, next) => {
   const { email, password } = req.body;
-  try {
-    const user = await User.findUserByCredentials(email, password);
-    const token = jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: '7d' });
-    return res
-      .cookie('jwt', token, {
-        httpOnly: true,
-        sameSite: true,
-        maxAge: 360000 * 24 * 7,
-      })
-      .send({ email: user.email, name: user.name });
-  } catch (err) {
-    return next(err);
-  }
+  return User.findUserByCredentials(email, password)
+    .then((user) => {
+      if (!user) {
+        throw new NotFoundError(errorMessages.USER_NOT_FOUND);
+      }
+      const token = jwt.sign(
+        { _id: user._id },
+        NODE_ENV === 'production' ? JWT_SECRET : 'the-secret-key',
+        {
+          expiresIn: '7d',
+        },
+      );
+      const currentUser = user.toObject();
+      delete currentUser.password;
+
+      res
+        .cookie('jwt', token, {
+          maxAge: 604800000,
+          httpOnly: true,
+        })
+        .send(currentUser);
+    })
+    .catch((err) => next(err));
 };
 
-const signout = (req, res) => res.clearCookie('jwt', { httpOnly: true, sameSite: true }).send({ message: 'Досвидания' });
-
-module.exports = {
-  create, get, update, login, signout,
+exports.logout = (req, res, next) => {
+  try {
+    res
+      .cookie('jwt', '', {
+        maxAge: -1,
+        httpOnly: true,
+      })
+      .send({ message: messages.LOGOUT });
+  } catch (err) {
+    next(new NotFoundError(errorMessages.USER_NOT_FOUND));
+  }
 };
