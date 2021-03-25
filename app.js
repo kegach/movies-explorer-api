@@ -1,4 +1,4 @@
-const dotenv = require('dotenv');
+require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
@@ -17,20 +17,12 @@ const { DATABASE_URL = DEV_DATABASE_URL } = process.env;
 const { PORT = 3000 } = process.env;
 const app = express();
 
-dotenv.config();
-
 mongoose.connect(DATABASE_URL, {
   useNewUrlParser: true,
   useCreateIndex: true,
   useFindAndModify: false,
   useUnifiedTopology: true,
 });
-
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
-
-app.use(cookieParser());
-app.use(helmet());
 
 const option = {
   origin: [
@@ -47,6 +39,12 @@ const option = {
 };
 
 app.use('*', cors(option));
+app.use(helmet());
+app.use(cookieParser());
+
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
 app.use(reqLogger);
 app.use(limiter);
 
@@ -57,4 +55,4 @@ app.use(errors());
 
 app.use(errorOnServer);
 
-app.listen(PORT);
+app.listen(PORT, () => {});
