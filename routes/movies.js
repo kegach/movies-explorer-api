@@ -1,4 +1,3 @@
-const joiObjectId = require('joi-objectid');
 const { celebrate, Joi } = require('celebrate');
 const express = require('express');
 
@@ -9,7 +8,6 @@ const {
 } = require('../controllers/movies');
 
 const router = express.Router();
-Joi.objectId = joiObjectId(Joi);
 
 router.get('/', getMovies);
 router.post('/', celebrate({
@@ -28,7 +26,7 @@ router.post('/', celebrate({
     thumbnail: Joi
       .string()
       .required(),
-    nameRU: Joi.required(),
+    nameRU: Joi.string().required(),
     nameEN: Joi.string().required(),
     movieId: Joi.number().required(),
   }),
