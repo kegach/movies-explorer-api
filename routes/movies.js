@@ -6,8 +6,8 @@ const movieCon = require('../controllers/movies');
 
 const router = express.Router();
 
-router.get('/', movieCon.getMovies);
-router.post('/', celebrate({
+router.get('', movieCon.getMovies);
+router.post('', celebrate({
   body: Joi.object().keys({
     country: Joi.string().required(),
     director: Joi.string().required(),
