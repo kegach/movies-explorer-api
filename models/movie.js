@@ -63,7 +63,7 @@ const movieSchema = new mongoose.Schema({
     unique: [true, 'movieId уникален'],
   },
   nameRU: {
-    type: String,
+    // type: String,
     required: true,
   },
   nameEN: {
