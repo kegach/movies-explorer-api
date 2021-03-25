@@ -52,12 +52,12 @@ const deleteMovie = async (req, res, next) => {
   const { movieId } = req.params;
 
   try {
-    const movie = await Movie.findOne({ movieId })
+    const movie = await Movie.findOne({ owner: req.user._id, movieId })
       .orFail(new NotFound('Не найдено'));
     if (movie.owner.toString() !== req.user._id.toString()) {
       throw new Forbidden('Нет прав для совершения данной операции');
     }
-    await Movie.deleteOne({ movieId });
+    await Movie.deleteOne({ owner: req.user._id, movieId });
     return res.send(movie);
   } catch (err) {
     return next(err);
