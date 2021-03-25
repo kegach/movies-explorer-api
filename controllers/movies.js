@@ -7,7 +7,7 @@ const getMovies = async (req, res, next) => {
   try {
     const movies = await Movie.find({ owner: req.user._id });
     if (!movies) {
-      return res.send([]);
+      return res.send('error');
     }
     return res.send(movies);
   } catch (err) {
@@ -52,26 +52,6 @@ const create = async (req, res, next) => {
       res.send(currentMovie);
     })
     .catch((err) => next(err));
-
-  try {
-    const movie = await Movie.create({
-      country,
-      director,
-      duration,
-      year,
-      description,
-      image,
-      trailer,
-      thumbnail,
-      nameRU,
-      nameEN,
-      movieId,
-      owner: req.user._id,
-    });
-    return res.send(movie);
-  } catch (err) {
-    return next(err);
-  }
 };
 const deleteMovie = async (req, res, next) => {
   const { movieId } = req.params;
