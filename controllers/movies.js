@@ -4,15 +4,14 @@ const BadRequest = require('../errors/badRequest');
 const Movie = require('../models/movie');
 
 const getMovies = async (req, res, next) => {
-  try {
-    const movies = await Movie.find({ owner: req.user._id });
-    if (!movies) {
-      return res.send('error');
-    }
-    return res.send(movies);
-  } catch (err) {
-    return next(err);
-  }
+  Movie.find({ owner: req.user._id })
+    .then((movies) => {
+      if (!movies) {
+        throw new NotFound('Не найдено');
+      }
+      res.send(movies);
+    })
+    .catch((err) => next(err));
 };
 const create = async (req, res, next) => {
   const {
