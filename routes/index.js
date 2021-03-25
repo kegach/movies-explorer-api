@@ -20,13 +20,11 @@ router.use('/signin', celebrate({
   }),
 }), login);
 
-router.use(auth);
-router.use('/users', usersRouter);
-router.use('/movies', moviesRouter);
-
 router.get('/signout', signout);
-router.use('*', () => {
-  throw new NotFound('Запрашиваемый ресурс не найден');
-});
+
+router.use('/users', auth, usersRouter);
+router.use('/movies', auth, moviesRouter);
+
+router.use(auth, (req, res, next) => next(new NotFound('Запрашиваемый ресурс не найден')));
 
 module.exports = router;

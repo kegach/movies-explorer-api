@@ -1,5 +1,6 @@
 const NotFound = require('../errors/notFound');
 const Forbidden = require('../errors/forbidden');
+const BadRequest = require('../errors/badRequest');
 const Movie = require('../models/movie');
 
 const getMovies = async (req, res, next) => {
@@ -27,6 +28,30 @@ const create = async (req, res, next) => {
     nameEN,
     movieId,
   } = req.body;
+
+  Movie.create({
+    country,
+    director,
+    duration,
+    year,
+    description,
+    image,
+    trailer,
+    movieId,
+    nameRU,
+    nameEN,
+    thumbnail,
+    owner: req.user._id,
+  })
+    .then((movie) => {
+      if (!movie) {
+        throw new BadRequest('Неправильный запрос');
+      }
+      const currentMovie = movie.toObject();
+      delete currentMovie.owner;
+      res.send(currentMovie);
+    })
+    .catch((err) => next(err));
 
   try {
     const movie = await Movie.create({
