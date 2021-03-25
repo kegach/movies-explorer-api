@@ -2,15 +2,11 @@ const { celebrate, Joi } = require('celebrate');
 const express = require('express');
 const validator = require('validator');
 
-const {
-  getMovies,
-  create,
-  deleteMovie,
-} = require('../controllers/movies');
+const movieCon = require('../controllers/movies');
 
 const router = express.Router();
 
-router.get('/', getMovies);
+router.get('/', movieCon.getMovies);
 router.post('/', celebrate({
   body: Joi.object().keys({
     country: Joi.string().required(),
@@ -40,11 +36,11 @@ router.post('/', celebrate({
     nameRU: Joi.string().required(),
     nameEN: Joi.string().required(),
   }),
-}), create);
+}), movieCon.addMovie);
 router.delete('/:movieId', celebrate({
   params: Joi.object().keys({
     movieId: Joi.number().required(),
   }),
-}), deleteMovie);
+}), movieCon.deleteMovie);
 
 module.exports = router;
