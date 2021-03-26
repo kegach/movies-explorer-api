@@ -15,7 +15,7 @@ exports.getMovies = async (req, res, next) => {
     return next(err);
   }
 };
-exports.addMovie = async (req, res) => {
+exports.addMovie = async (req, res, next) => {
   const {
     country,
     director,
@@ -29,8 +29,7 @@ exports.addMovie = async (req, res) => {
     nameEN,
     movieId,
   } = req.body;
-  // eslint-disable-next-line no-console
-  console.trace();
+
   try {
     const movie = await Movie.create({
       country,
@@ -49,9 +48,7 @@ exports.addMovie = async (req, res) => {
 
     return res.send(movie);
   } catch (err) {
-    // eslint-disable-next-line prefer-promise-reject-errors
-    return Promise.reject(`Ошибка: ${res.status}`);
-    // return next(err);
+    return next(err);
   }
 };
 
