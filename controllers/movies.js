@@ -12,7 +12,8 @@ exports.getMovies = async (req, res) => {
 
     return res.send(movies);
   } catch (err) {
-    return new Error(`${err.message}`);
+    // eslint-disable-next-line no-console
+    return console.log(`${err.message}`);
   }
 };
 exports.addMovie = async (req, res) => {
@@ -48,7 +49,8 @@ exports.addMovie = async (req, res) => {
 
     return res.send(movie);
   } catch (err) {
-    return new Error(`${err.message}`);
+    // eslint-disable-next-line no-console
+    return console.log(`${err.message}`);
   }
 };
 
@@ -67,6 +69,7 @@ exports.deleteMovie = async (req, res) => {
 
     return res.send(movie);
   } catch (err) {
-    return new Error(`${err.message}`);
+    // eslint-disable-next-line no-console
+    return console.log(`${err.message}`);
   }
 };
