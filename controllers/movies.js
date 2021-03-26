@@ -1,18 +1,21 @@
 const NotFound = require('../errors/notFound');
-const BadRequest = require('../errors/badRequest');
+const Forbidden = require('../errors/forbidden');
 const Movie = require('../models/movie');
 
-exports.getMovies = (req, res, next) => {
-  Movie.find({ owner: req.user._id })
-    .then((movies) => {
-      if (!movies) {
-        throw new NotFound('Не найдено');
-      }
-      res.send(movies);
-    })
-    .catch((err) => next(err));
+exports.getMovies = async (req, res, next) => {
+  try {
+    const movies = await Movie.find({ owner: req.user._id });
+
+    if (!movies) {
+      return res.send([]);
+    }
+
+    return res.send(movies);
+  } catch (err) {
+    return next(err);
+  }
 };
-exports.addMovie = (req, res, next) => {
+exports.addMovie = async (req, res, next) => {
   const {
     country,
     director,
@@ -26,47 +29,45 @@ exports.addMovie = (req, res, next) => {
     nameEN,
     movieId,
   } = req.body;
+  // eslint-disable-next-line no-console
+  console.trace();
+  try {
+    const movie = await Movie.create({
+      country,
+      director,
+      duration,
+      year,
+      description,
+      image,
+      trailer,
+      thumbnail,
+      nameRU,
+      nameEN,
+      movieId,
+      owner: req.user._id,
+    });
 
-  Movie.create({
-    country,
-    director,
-    duration,
-    year,
-    description,
-    image,
-    trailer,
-    movieId,
-    nameRU,
-    nameEN,
-    thumbnail,
-    owner: req.user._id,
-  })
-    .then((movie) => {
-      if (!movie) {
-        throw new BadRequest('Неправильный запрос');
-      }
-      const currentMovie = movie.toObject();
-      delete currentMovie.owner;
-      res.send(currentMovie);
-    })
-    .catch((err) => next(err));
+    return res.send(movie);
+  } catch (err) {
+    return next(err);
+  }
 };
 
-exports.deleteMovie = (req, res, next) => {
-  Movie.findOne(
-    {
-      movieId: req.params.movieId,
-      owner: req.user._id,
-    },
-  )
-    .select('+owner')
-    .then((movie) => {
-      if (!movie) {
-        throw new BadRequest('Неправильный запрос');
-      }
-      const deletedMovie = movie;
-      movie.remove();
-      res.send(deletedMovie);
-    })
-    .catch((err) => next(err));
+exports.deleteMovie = async (req, res, next) => {
+  const { movieId } = req.params;
+
+  try {
+    const movie = await Movie
+      .findOne({ owner: req.user._id, movieId })
+      .orFail(new NotFound('Не найдено'));
+
+    if (movie.owner.toString() !== req.user._id.toString()) {
+      throw new Forbidden('Ошибка');
+    }
+    await Movie.deleteOne({ owner: req.user._id, movieId });
+
+    return res.send(movie);
+  } catch (err) {
+    return next(err);
+  }
 };
