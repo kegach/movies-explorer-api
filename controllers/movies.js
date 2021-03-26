@@ -2,7 +2,7 @@ const NotFound = require('../errors/notFound');
 const Forbidden = require('../errors/forbidden');
 const Movie = require('../models/movie');
 
-exports.getMovies = async (req, res, next) => {
+exports.getMovies = async (req, res) => {
   try {
     const movies = await Movie.find({ owner: req.user._id });
 
@@ -12,10 +12,10 @@ exports.getMovies = async (req, res, next) => {
 
     return res.send(movies);
   } catch (err) {
-    return next(err);
+    return new Error(`${err.message}`);
   }
 };
-exports.addMovie = async (req, res, next) => {
+exports.addMovie = async (req, res) => {
   const {
     country,
     director,
@@ -48,11 +48,11 @@ exports.addMovie = async (req, res, next) => {
 
     return res.send(movie);
   } catch (err) {
-    return next(err);
+    return new Error(`${err.message}`);
   }
 };
 
-exports.deleteMovie = async (req, res, next) => {
+exports.deleteMovie = async (req, res) => {
   const { movieId } = req.params;
 
   try {
@@ -67,6 +67,6 @@ exports.deleteMovie = async (req, res, next) => {
 
     return res.send(movie);
   } catch (err) {
-    return next(err);
+    return new Error(`${err.message}`);
   }
 };
