@@ -2,7 +2,7 @@ const NotFound = require('../errors/notFound');
 const Forbidden = require('../errors/forbidden');
 const Movie = require('../models/movie');
 
-exports.getMovies = async (req, res) => {
+exports.getMovies = async (req, res, next) => {
   try {
     const movies = await Movie.find({ owner: req.user._id });
 
@@ -12,11 +12,10 @@ exports.getMovies = async (req, res) => {
 
     return res.send(movies);
   } catch (err) {
-    // eslint-disable-next-line no-console
-    return console.log(req.body);
+    return next(err);
   }
 };
-exports.addMovie = async (req, res) => {
+exports.addMovie = async (req, res, next) => {
   const {
     country,
     director,
@@ -49,12 +48,11 @@ exports.addMovie = async (req, res) => {
 
     return res.send(movie);
   } catch (err) {
-    // eslint-disable-next-line no-console
-    return console.log(req.body);
+    return next(err);
   }
 };
 
-exports.deleteMovie = async (req, res) => {
+exports.deleteMovie = async (req, res, next) => {
   const { movieId } = req.params;
 
   try {
@@ -69,7 +67,6 @@ exports.deleteMovie = async (req, res) => {
 
     return res.send(movie);
   } catch (err) {
-    // eslint-disable-next-line no-console
-    return console.log(req.body);
+    return next(err);
   }
 };
